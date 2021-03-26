@@ -12,7 +12,7 @@ function generate(asset) {
 
   let state = {
     imports: [],
-    handlers: [],
+    methods: [],
   }
 
   let code = ""
@@ -28,8 +28,8 @@ function generate(asset) {
     }
   }
 
-  let { imports, handlers } = state
-  let hook = generateHook(tag, handlers, root && root.name === "template")
+  let { imports, methods } = state
+  let hook = generateHook(tag, methods, root && root.name === "template")
   return { hook, code, imports }
 }
 
@@ -51,15 +51,15 @@ function lifeCode() {
   }
 }
 
-function generateHook(tag, handlers, isTemplate) {
+function generateHook(tag, methods, isTemplate) {
   let { life, code } = lifeCode(tag)
   let decode
   if (tag) {
-    decode = `const {properties:data, methods:{${handlers.join(
+    decode = `const {properties:data, methods:{${methods.join(
       ","
     )}},${life}} = useComponent(fre.useState({})[1], props,'${tag}')`
   } else {
-    decode = `const {data, ${life}, ${handlers.join(",")}} = usePage(${
+    decode = `const {data, ${life}, ${methods.join(",")}} = usePage(${
       isTemplate ? "null" : "fre.useState({})[1]"
     }, props)`
   }
@@ -103,7 +103,7 @@ function generateNode(node, state, asset, nextNode) {
     if (node.directives) {
       code = generateDirect(node, code, state, nextNode)
     }
-    if (node.handlers) pushDirect(node.handlers, state.handlers)
+    if (node.methods) pushDirect(node.methods, state.methods)
     if (node.imports) pushDirect(node.imports, state.imports)
 
     return code
@@ -191,8 +191,8 @@ function generateProps(node, state, asset) {
       node.directives = node.directives || []
       node.directives.push([name, value])
     } else if (name.startsWith("bind")) {
-      node.handlers = node.handlers || []
-      node.handlers.push(value)
+      node.methods = node.methods || []
+      node.methods.push(value)
       const n = name.replace("bind:", "").replace("bind", "")
       code += ` ${eventMap[n] || n}={e => ${value}(e)} `
     } else if (node.name === "import") {
