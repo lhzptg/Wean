@@ -89,7 +89,7 @@ function generateNode(node, state, asset, nextNode) {
     return code
   } else {
     let code = `<${titleCase(node.name)} `
-    code += generateProps(node, state, asset)
+    code += generateProps(node, asset)
     if (node.children) {
       code += `${node.children
         .map((item, index) =>
@@ -101,7 +101,7 @@ function generateNode(node, state, asset, nextNode) {
 
     if (node.name === "import") code = ""
     if (node.directives) {
-      code = generateDirect(node, code, state, nextNode)
+      code = generateDirect(node, code, nextNode)
     }
     if (node.methods) pushDirect(node.methods, state.methods)
     if (node.imports) pushDirect(node.imports, state.imports)
@@ -119,7 +119,7 @@ function pushDirect(a, b) {
 
 let ifcode = ""
 
-function generateDirect(node, code, state, next) {
+function generateDirect(node, code, next) {
   for (let i = 0; i < node.directives.length; i++) {
     const [name, value] = node.directives[i]
     const compiled = compileExpression(value, "direct")
@@ -183,7 +183,7 @@ function findItem(node) {
   return item ? item[1] : "item"
 }
 
-function generateProps(node, state, asset) {
+function generateProps(node, asset) {
   let code = ""
   for (let name in node.attributes) {
     const value = node.attributes[name]
