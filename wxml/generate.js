@@ -89,7 +89,7 @@ function generateNode(node, state, asset, nextNode) {
     return code
   } else {
     let code = `<${titleCase(node.name)} `
-    code += generateProps(node, asset)
+    code += generateProps(node, state, asset)
     if (node.children) {
       code += `${node.children
         .map((item, index) =>
@@ -103,17 +103,7 @@ function generateNode(node, state, asset, nextNode) {
     if (node.directives) {
       code = generateDirect(node, code, nextNode)
     }
-    if (node.methods) pushDirect(node.methods, state.methods)
-    if (node.imports) pushDirect(node.imports, state.imports)
-
     return code
-  }
-}
-
-function pushDirect(a, b) {
-  for (let i = 0; i < a.length; i++) {
-    const im = a[i]
-    if (b.indexOf(im) < 0) b.push(im)
   }
 }
 
@@ -183,7 +173,7 @@ function findItem(node) {
   return item ? item[1] : "item"
 }
 
-function generateProps(node, asset) {
+function generateProps(node, state, asset) {
   let code = ""
   for (let name in node.attributes) {
     const value = node.attributes[name]
@@ -191,13 +181,11 @@ function generateProps(node, asset) {
       node.directives = node.directives || []
       node.directives.push([name, value])
     } else if (name.startsWith("bind")) {
-      node.methods = node.methods || []
-      node.methods.push(value)
+      state.methods.push(value)
       const n = name.replace("bind:", "").replace("bind", "")
       code += ` ${eventMap[n] || n}={e => ${value}(e)} `
     } else if (node.name === "import") {
-      node.imports = node.imports || []
-      node.imports.push(value)
+      state.imports.push(value)
     } else {
       let compiled = compileExpression(value, "attr")
       code += `${name}=${compiled}`
@@ -228,8 +216,8 @@ function compileExpression(expression, type) {
         })
       })
       return expression.indexOf("$") > -1
-      ? "{`" + expression + "`}"
-      : expression
+        ? "{`" + expression + "`}"
+        : expression
   }
 }
 
